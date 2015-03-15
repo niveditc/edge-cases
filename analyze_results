@@ -1,0 +1,151 @@
+#!/usr/bin/python
+
+# Get the processed data to perform analyses on
+from process_data import parse_records
+records = parse_records()
+
+
+## VARIOUS ANALYSES ##
+
+# Average complexity over all submissions
+is_in_comp = []
+insert_comp = []
+delete_comp = []
+
+for record in records.values() :
+  if len(record["is_in"]) != 0 :
+    is_in_comp.append(
+      sum([rec["complexity"] for rec in record["is_in"]])/len(record["is_in"])
+    )
+  if len(record["insert"]) != 0 :
+    insert_comp.append(
+      sum([rec["complexity"] for rec in record["insert"]])/len(record["insert"])
+    )
+  if len(record["delete"]) != 0 :
+    delete_comp.append(
+      sum([rec["complexity"] for rec in record["delete"]])/len(record["delete"])
+    )
+
+# Time to completion and complexity of last submission
+def is_complete(bitstring) :
+  for c in bitstring :
+    if c == '0' :
+      return False
+  return True
+
+time_ints = [930, 1030, 1130, 1230, 1330, 1430, 1530, 1630]
+is_in_times = []
+insert_times = []
+delete_times = []
+is_in_last_comp = []
+insert_last_comp = []
+delete_last_comp = []
+for record in records.values() :
+  record["is_in"] = sorted(record["is_in"],
+                           key = lambda rec : rec["timestamp"])
+  flag = False
+  for rec in record["is_in"] :
+    if is_complete(rec["bit_vector"]) :
+      time = rec["timestamp"].split(':')[1] + rec["timestamp"].split(':')[2]
+      time_diff = int(time) - time_ints[record["time_int"]]
+      is_in_times.append(time_diff - 40 if time_diff >= 70 else time_diff)
+      is_in_last_comp.append(rec["complexity"])
+      flag = True
+  if (not flag and len(record["is_in"]) > 0) :
+      is_in_last_comp.append(record["is_in"][-1]["complexity"])
+
+  record["insert"] = sorted(record["insert"],
+                            key = lambda rec : rec["timestamp"])
+  flag = False
+  for rec in record["insert"] :
+    if is_complete(rec["bit_vector"]) :
+      time = rec["timestamp"].split(':')[1] + rec["timestamp"].split(':')[2]
+      time_diff = int(time) - time_ints[record["time_int"]]
+      insert_times.append(time_diff - 40 if time_diff >= 70 else time_diff)
+      insert_last_comp.append(rec["complexity"])
+      flag = True
+  if (not flag and len(record["insert"]) > 0) :
+      is_in_last_comp.append(record["insert"][-1]["complexity"])
+
+
+  record["delete"] = sorted(record["delete"],
+                         key = lambda rec : rec["timestamp"])
+  flag = False
+  for rec in record["delete"] :
+    if is_complete(rec["bit_vector"]) :
+      time = rec["timestamp"].split(':')[1] + rec["timestamp"].split(':')[2]
+      time_diff = int(time) - time_ints[record["time_int"]]
+      delete_times.append(time_diff - 40 if time_diff >= 70 else time_diff)
+      delete_last_comp.append(rec["complexity"])
+      flag = True
+  if (not flag and len(record["delete"]) > 0) :
+      is_in_last_comp.append(record["delete"][-1]["complexity"])
+
+# Number of compiles
+is_in_compiles = []
+insert_compiles = []
+delete_compiles = []
+for record in records.values() :
+  if len(record["is_in"]) != 0 :
+    is_in_compiles.append(len(record["is_in"]))
+  if len(record["insert"]) != 0 :
+    insert_compiles.append(len(record["insert"]))
+  if len(record["delete"]) != 0 :
+    delete_compiles.append(len(record["delete"]))
+
+
+## OUTPUT RESULTS ##
+
+# Helper functions for formatting the output
+def print_results(title, results) :
+  row_headers = [" " * 6, " is_in", "insert", "delete"]
+  print " " * 6 + title.center(len(results[0]) * 8)
+
+  for i in range(len(results)) :
+    print row_headers[i],
+    for field in results[i] :
+      print field.rjust(8, ' ') ,
+    print ""
+
+def compute_metrics(is_in_arr, insert_arr, delete_arr) :
+  results = [["avg","min","max","num"]]
+  for arr in [is_in_arr, insert_arr, delete_arr] :
+    res = []
+    res.append(str(round(sum(arr)/len(arr),2)))
+    res.append(str(min(arr)))
+    res.append(str(max(arr)))
+    res.append(str(len(arr)))
+    results.append(res)
+  return results
+
+def print_to_csv(name, is_in_arr, insert_arr, delete_arr) :
+  name = raw_input("Output file for " + name + " (csv): ")
+  f1 = open(name, 'a')
+  f1.write(",".join(str(s) for s in is_in_arr))
+  f1.write("\n")
+  f1.write(",".join(str(s) for s in insert_arr))
+  f1.write("\n")
+  f1.write(",".join(str(s) for s in delete_arr))
+  f1.write("\n")
+  f1.close();
+
+
+# Print metrics for various analyses
+print_results("Number of compiles ",
+              compute_metrics(is_in_compiles, insert_compiles, delete_compiles))
+print_results("Average complexity",
+              compute_metrics(is_in_comp,insert_comp, delete_comp))
+print_results("Complexity of last submission",
+              compute_metrics(is_in_last_comp,
+                              insert_last_comp, delete_last_comp))
+print_results("Time to completion",
+              compute_metrics(is_in_times,insert_times, delete_times))
+
+
+# Write the results to CSV for various analyses
+#print_to_csv("Number of compiles", is_in_compiles, insert_compiles,
+#             delete_compiles)
+# print_to_csv("Average complexity", is_in_comp, insert_comp, delete_comp)
+# print_to_csv("Complexity of last submission", is_in_last_comp,
+#              insert_last_comp, delete_last_comp)
+# print_to_csv("Time to completion", is_in_times, insert_times, delete_times)
