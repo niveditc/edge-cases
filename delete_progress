@@ -25,33 +25,59 @@ state_map = {
   '111111111111111111111111111111111111' : 'Z',
 }
 
+transitions = []
+# Filter out extraneous end states and add in the start state of 4
+for record in records.values() :
+  delete = record['delete']
+  transition = ['4']
+  for entry in delete :
+    state = state_map[entry['bit_vector']]
+    if (state == '2') or (state == '4') :
+      transition.append(transition[-1])
+    elif (state == 'Z') and (transition[-1] == 'Z') :
+      continue
+    else :
+      transition.append(state)
+  transitions.append(transition)
+
 state_count = dict() # stores the count of each state
 edge_count = dict() # stores the count of each edge
-for record in records.values() :
-  delete = record["delete"]
-  for entry in delete :
-    bit_vector = entry["bit_vector"]
-    if bit_vector not in state_count.keys() :
-      state_count[bit_vector] = 1
+end_count = dict() # stores the count of each end state
+for transition in transitions :
+  # Count states
+  for state in transition :
+    if state not in state_count.keys() :
+      state_count[state] = 1
     else :
-      state_count[bit_vector] += 1
-  for i in xrange(len(delete) - 1) :
-    v1 = state_map[delete[i]["bit_vector"]]
-    v2 = state_map[delete[i+1]["bit_vector"]]
-    edge = v1 + v2
+      state_count[state] += 1
+  # Count edges
+  for i in xrange(len(transition) - 1) :
+    edge = transition[i] + transition[i+1]
     if edge not in edge_count.keys() :
       edge_count[edge] = 1
     else :
       edge_count[edge] += 1
+  # Count end states
+  end_state = transition[-1]
+  if end_state not in end_count.keys() :
+    end_count[end_state] = 1
+  else :
+    end_count[end_state] += 1
 
 # Print each state with its count
-states = []
-for k in state_count.keys() :
-  states.append(state_map[k] + " : " + str(state_count[k]))
-print "\n".join(sorted(states))
+print 'States : '
+for k in sorted(state_count.keys()) :
+  print k + ' : ' + str(state_count[k])
+print ''
 
 # Print each edge with its count
-edges = []
-for k in edge_count.keys() :
-  edges.append(k + " : " + str(edge_count[k]))
-print "\n".join(sorted(edges))
+print 'Edges : '
+for k in sorted(edge_count.keys()) :
+  print k + ' : ' + str(edge_count[k])
+print ''
+
+print 'End states : '
+# Print the start states
+for s in end_count :
+  print s + ' : ' + str(end_count[s])
+print ''
