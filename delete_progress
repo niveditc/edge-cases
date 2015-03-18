@@ -1,0 +1,57 @@
+#!/usr/bin/python
+
+# Get the processed data to perform analyses on
+from process_data import parse_records
+records = parse_records()
+
+state_map = {
+  '100000000000000000000000000000000000' : '1',
+  '110000000000000000000000000000000000' : '2',
+  '111000000000000000000000000000000000' : '3',
+  '111100110111011011111010000000000111' : '4',
+  '111100110111011011111011000000000111' : '5',
+  '111100110111011011111011110000000111' : '6',
+  '111100110111111011111110000000000111' : '7',
+  '111100110111111011111111110000000111' : '8',
+  '111100111111011111111011111000000111' : '9',
+  '111111110111111011111111110000011111' : 'A',
+  '111111111111011111111010000000001111' : 'B',
+  '111111111111011111111010000000011111' : 'C',
+  '111111111111111111111110000000011111' : 'D',
+  '111111001000000100000000000000011111' : 'E',
+  '111111111111111111111111000001111111' : 'F',
+  '111111111111111111111111000000011111' : 'L',
+  '111111111111011111111011000001111111' : 'M',
+  '111111111111111111111111111111111111' : 'Z',
+}
+
+state_count = dict() # stores the count of each state
+edge_count = dict() # stores the count of each edge
+for record in records.values() :
+  delete = record["delete"]
+  for entry in delete :
+    bit_vector = entry["bit_vector"]
+    if bit_vector not in state_count.keys() :
+      state_count[bit_vector] = 1
+    else :
+      state_count[bit_vector] += 1
+  for i in xrange(len(delete) - 1) :
+    v1 = state_map[delete[i]["bit_vector"]]
+    v2 = state_map[delete[i+1]["bit_vector"]]
+    edge = v1 + v2
+    if edge not in edge_count.keys() :
+      edge_count[edge] = 1
+    else :
+      edge_count[edge] += 1
+
+# Print each state with its count
+states = []
+for k in state_count.keys() :
+  states.append(state_map[k] + " : " + str(state_count[k]))
+print "\n".join(sorted(states))
+
+# Print each edge with its count
+edges = []
+for k in edge_count.keys() :
+  edges.append(k + " : " + str(edge_count[k]))
+print "\n".join(sorted(edges))
