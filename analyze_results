@@ -51,7 +51,7 @@ for record in records.values() :
       is_in_times.append(time_diff - 40 if time_diff >= 70 else time_diff)
       is_in_last_comp.append(rec["complexity"])
       flag = True
-  if (not flag and len(record["is_in"]) > 0) :
+  if (not flag) and (len(record["is_in"]) > 0) :
       is_in_last_comp.append(record["is_in"][-1]["complexity"])
 
   record["insert"] = sorted(record["insert"],
@@ -64,8 +64,8 @@ for record in records.values() :
       insert_times.append(time_diff - 40 if time_diff >= 70 else time_diff)
       insert_last_comp.append(rec["complexity"])
       flag = True
-  if (not flag and len(record["insert"]) > 0) :
-      is_in_last_comp.append(record["insert"][-1]["complexity"])
+  if (not flag) and (len(record["insert"]) > 0) :
+      insert_last_comp.append(record["insert"][-1]["complexity"])
 
 
   record["delete"] = sorted(record["delete"],
@@ -78,8 +78,8 @@ for record in records.values() :
       delete_times.append(time_diff - 40 if time_diff >= 70 else time_diff)
       delete_last_comp.append(rec["complexity"])
       flag = True
-  if (not flag and len(record["delete"]) > 0) :
-      is_in_last_comp.append(record["delete"][-1]["complexity"])
+  if (not flag) and (len(record["delete"]) > 0) :
+      delete_last_comp.append(record["delete"][-1]["complexity"])
 
 # Number of compiles
 is_in_compiles = []
