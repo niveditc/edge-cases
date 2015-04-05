@@ -43,4 +43,6 @@ To compute a progress to solution metric, we classified each submission to be in
 
 **Q** – Cannot delete from end of a non-singleton list?
 
+**Y** – FAILURE (no students reached solution once they entered this state)
+
 **Z** – SUCCESS
